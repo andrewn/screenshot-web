@@ -103,6 +103,7 @@ def create_screenshot( url, path, extension = PNG )
   full_path = path + DOT + extension
   command = "/Users/andrew/Projects/Tools/GraphicsDojo/webcapture/webcapture #{url} -o #{full_path}"
   command = "export DISPLAY=:0; /var/www/apps/screenshot/bin/webcapture #{url} -o #{full_path}"
+  command = "export DISPLAY=:0; ../bin/webcapture #{url} -o #{full_path}"
 
   puts File.dirname(__FILE__)
   puts command
