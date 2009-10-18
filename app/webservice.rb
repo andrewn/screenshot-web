@@ -54,7 +54,7 @@ get '/' do
 end
 
 PATTERN_URL_DATE  = '/site/:url/:year/:month/:date/:hour/:min'
-PATTERN_URL       = '/site/:url'
+PATTERN_URL       = /site\/(.*[?&]?.*)/i
 
 PATTERN           = PATTERN_URL
 
@@ -63,10 +63,17 @@ get PATTERN do
   looks_like_url = true
   pass unless looks_like_url
   
-  url = params[:url]
+  # Decide how to fetch the URL
+  url = params[:captures].first
+  
+  unless /http(s)?:\/\//i.match url
+    url = HTTP + url
+  end
+  
+  url_digest = Digest::SHA1.hexdigest( url )
   
   file_path = "/tmp/"
-  file_name = url # sanitize!
+  file_name = url_digest
   file      = file_path + file_name
   
   if CACHE_TYPE == :internal then
@@ -74,12 +81,12 @@ get PATTERN do
     # the cache. If the cache is invalid then we 
     # create a new screenshot and put that in the 
     # cache.
-    shot_path = get_from_cache_or_put_from_block( url, CACHE_EXPIRY_IN_SECS ) do 
-      new_shot = create_screenshot( HTTP + params[:url], file )
+    shot_path = get_from_cache_or_put_from_block( url_digest, CACHE_EXPIRY_IN_SECS ) do 
+      new_shot = create_screenshot( url, file )
       new_shot
     end
   else 
-    shot_path = create_screenshot( HTTP + params[:url], file )
+    shot_path = create_screenshot( url, file )
   end
   
 #  headers( "Cache-Control" => "max-age=" + CACHE_EXPIRY_IN_SECS.to_s )
