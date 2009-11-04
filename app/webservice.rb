@@ -63,13 +63,15 @@ get PATTERN do
   looks_like_url = true
   pass unless looks_like_url
   
+  puts params[:captures]
+
   # Decide how to fetch the URL
   url = params[:captures].first
   
   unless /http(s)?:\/\//i.match url
     url = HTTP + url
   end
-  
+puts url  
   url_digest = Digest::SHA1.hexdigest( url )
   
   file_path = "/tmp/"
@@ -110,7 +112,7 @@ def create_screenshot( url, path, extension = PNG )
   full_path = path + DOT + extension
   command = "/Users/andrew/Projects/Tools/GraphicsDojo/webcapture/webcapture #{url} -o #{full_path}"
   command = "export DISPLAY=:0; /var/www/apps/screenshot/bin/webcapture #{url} -o #{full_path}"
-  command = "export DISPLAY=:0; #{options.root.to_s}/../bin/webcapture #{url} -o #{full_path}"
+  command = "export DISPLAY=:0; #{options.root.to_s}/../bin/webcapture '#{url}' -o #{full_path}"
 
   puts File.dirname(__FILE__)
   puts command
