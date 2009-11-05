@@ -64,14 +64,16 @@ get PATTERN do
   looks_like_url = true
   pass unless looks_like_url
   
+  puts "***"
   puts params[:captures]
-
+  puts "***"
+  
   # Decide how to fetch the URL
-  url = params[:captures][3]
+  url = params[:captures][2]
 
   pause = nil
-  pause = params[:captures][1] if params[:capture][1]
-  
+  pause = params[:captures][1] if params[:captures] and params[:captures][1]
+
   unless /http(s)?:\/\//i.match url
     url = HTTP + url
   end
@@ -116,7 +118,7 @@ end
 
 def create_screenshot( url, path, opts )
 
-  extension = opts[:extension] || "PNG"
+  extension = opts[:extension] || PNG
   pause = opts[:pause] || 0
  
   full_path = path + DOT + extension
