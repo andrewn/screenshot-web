@@ -55,6 +55,7 @@ end
 
 PATTERN_URL_DATE  = '/site/:url/:year/:month/:date/:hour/:min'
 PATTERN_URL       = /site\/(.*[?&]?.*)/i
+PATTERN_URL = /site(\/pause:([\d]*))?\/(.*[?&]?.*)/i
 
 PATTERN           = PATTERN_URL
 
@@ -66,12 +67,17 @@ get PATTERN do
   puts params[:captures]
 
   # Decide how to fetch the URL
-  url = params[:captures].first
+  url = params[:captures][3]
+
+  pause = nil
+  pause = params[:captures][1] if params[:capture][1]
   
   unless /http(s)?:\/\//i.match url
     url = HTTP + url
   end
-puts url  
+
+  puts url  
+  
   url_digest = Digest::SHA1.hexdigest( url )
   
   file_path = "/tmp/"
@@ -84,11 +90,11 @@ puts url
     # create a new screenshot and put that in the 
     # cache.
     shot_path = get_from_cache_or_put_from_block( url_digest, CACHE_EXPIRY_IN_SECS ) do 
-      new_shot = create_screenshot( url, file )
+      new_shot = create_screenshot( url, file, { :pause => pause } )
       new_shot
     end
   else 
-    shot_path = create_screenshot( url, file )
+    shot_path = create_screenshot( url, file, { :pause => pause } )
   end
   
 #  headers( "Cache-Control" => "max-age=" + CACHE_EXPIRY_IN_SECS.to_s )
@@ -108,11 +114,15 @@ put PATTERN do
   # Create a new shot???
 end
 
-def create_screenshot( url, path, extension = PNG ) 
+def create_screenshot( url, path, opts )
+
+  extension = opts[:extension] || "PNG"
+  pause = opts[:pause] || 0
+ 
   full_path = path + DOT + extension
   command = "/Users/andrew/Projects/Tools/GraphicsDojo/webcapture/webcapture #{url} -o #{full_path}"
   command = "export DISPLAY=:0; /var/www/apps/screenshot/bin/webcapture #{url} -o #{full_path}"
-  command = "export DISPLAY=:0; #{options.root.to_s}/../bin/webcapture '#{url}' -o #{full_path}"
+  command = "export DISPLAY=:0; #{options.root.to_s}/../bin/webcapture '#{url}' -o #{full_path} -p #{pause}"
 
   puts File.dirname(__FILE__)
   puts command
